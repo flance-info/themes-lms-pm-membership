@@ -194,7 +194,7 @@ class STM_LMS_Subscriptions_Edublink {
 
 		$membership_id = ( ! empty( $_GET['membership_id'] ) ) ? intval( $_GET['membership_id'] ) : '';
 
-		wp_send_json( self::_use_membership( $user_id, $course_id, $membership_id ) );
+		wp_send_json( self::_use_membership_edulink( $user_id, $course_id, $membership_id ) );
 	}
 
 	public static function subscription_enabled() {
@@ -724,11 +724,28 @@ class STM_LMS_Subscriptions_Edublink {
         // Get subscription info
         $sub = self::user_subscriptions(null, null, $membership_id);
         $r['sub'] = $sub;
-      //  echo 'wwqqqqqq'.$current_month_quota; exit;
+        if ( ! empty( $membership_id ) ) {
+            $sub  = object;
+            $subs = self::user_subscription_levels();
+
+            if ( ! empty( $subs ) ) {
+                foreach ( $subs as $subscription ) {
+                    if ( $subscription->subscription_id === $membership_id && $subscription->quotas_left ) {
+                        $sub = $subscription;
+                    }
+                }
+            }
+        }
+
+        $membership_id = $sub->subscription_id;
+        $level_id = $sub->ID;
+
         if (!empty($membership_id)) {
           
             // Get monthly course limit from membership level settings
-            $monthly_course_limit = self::get_course_number($membership_id);
+            $monthly_course_limit = self::get_course_number($level_id);
+            
+
             if ($monthly_course_limit === '0' || empty($monthly_course_limit)) {
                 $r['error'] = __('This membership level does not allow course enrollment.', 'edublink-child');
                 return $r;
@@ -754,8 +771,11 @@ class STM_LMS_Subscriptions_Edublink {
                 'start_time DESC'
             );
            
-            $enrolled_count = count($enrolled_courses);
-    
+            $enrolled_count = self::count_subscription_month_enrollments($enrolled_courses, $subscription_start);
+            //print_r($enrolled_courses);
+            //echo 'enrolled_count'.$enrolled_count; 
+            //echo 'current_month_quota'.$current_month_quota; 
+           
             // Check if user can enroll in more courses this month
             if ($enrolled_count < $current_month_quota) {
                 // Allow enrollment
@@ -801,7 +821,34 @@ class STM_LMS_Subscriptions_Edublink {
     
         return $r;
     }
-    
+    public static function count_subscription_month_enrollments($enrolled_courses, $subscription_start) {
+        // Get the day of the month for the subscription start date
+        $subscription_day = date('j', $subscription_start);
+
+        // Get the current time
+        $current_time = current_time('timestamp');
+
+        // Calculate how many subscription months have passed
+        $months_passed = floor(($current_time - $subscription_start) / (30 * DAY_IN_SECONDS));
+
+        // Calculate the start of the current subscription month
+        $current_subscription_month_start = strtotime(date('Y-m-' . $subscription_day, $subscription_start) . " +$months_passed months");
+
+        // Calculate the end of the current subscription month
+        $next_subscription_month_start = strtotime(date('Y-m-' . $subscription_day, $subscription_start) . " +" . ($months_passed + 1) . " months");
+        $current_subscription_month_end = $next_subscription_month_start - 1;
+
+       
+        $enrolled_count = 0;
+        foreach ($enrolled_courses as $course) {
+            if ($course['start_time'] >= $current_subscription_month_start && $course['start_time'] <= $current_subscription_month_end) {
+                $enrolled_count++;
+            }
+        }
+
+        return $enrolled_count;
+    }
+
     // New method to calculate current month's quota
     public static function calculate_current_month_quota($subscription_start, $monthly_course_limit) {
         $current_time = current_time('timestamp');
