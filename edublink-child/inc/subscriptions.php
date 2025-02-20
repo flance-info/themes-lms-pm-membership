@@ -109,6 +109,7 @@ class STM_LMS_Subscriptions_Edublink {
 		if ( ! empty( $courses ) ) {
 			stm_lms_update_start_time_in_user_course( $user_id, $course_id );
 		} else {
+           
 			$sub = self::user_subscriptions( null, null, $membership_id );
 
 			$r['sub'] = $sub;
@@ -709,4 +710,136 @@ class STM_LMS_Subscriptions_Edublink {
 
 		return $data;
 	}
+
+    public static function _use_membership_edulink($user_id, $course_id, $membership_id) {
+        $r = array();
+  
+        // Check if user already has course
+        $courses = stm_lms_get_user_course($user_id, $course_id, array('user_course_id'));
+        if (!empty($courses)) {
+            stm_lms_update_start_time_in_user_course($user_id, $course_id);
+            return $r;
+        }
+      
+        // Get subscription info
+        $sub = self::user_subscriptions(null, null, $membership_id);
+        $r['sub'] = $sub;
+      //  echo 'wwqqqqqq'.$current_month_quota; exit;
+        if (!empty($membership_id)) {
+          
+            // Get monthly course limit from membership level settings
+            $monthly_course_limit = self::get_course_number($membership_id);
+            if ($monthly_course_limit === '0' || empty($monthly_course_limit)) {
+                $r['error'] = __('This membership level does not allow course enrollment.', 'edublink-child');
+                return $r;
+            }
+  
+            // Get subscription start date
+            $subscription_start = get_user_meta($user_id, 'subscription_start_date_' . $membership_id, true);
+            if (empty($subscription_start)) {
+                // First time subscription - set start date
+                $subscription_start = current_time('timestamp');
+                update_user_meta($user_id, 'subscription_start_date_' . $membership_id, $subscription_start);
+            }
+
+            // Calculate current month's quota
+            $current_month_quota = self::calculate_current_month_quota($subscription_start, $monthly_course_limit);
+            
+            // Get count of currently enrolled courses through subscription
+            $enrolled_courses = stm_lms_get_user_courses_by_subscription(
+                $user_id, 
+                $membership_id, 
+                array('user_course_id', 'start_time'), 
+                null,
+                'start_time DESC'
+            );
+           
+            $enrolled_count = count($enrolled_courses);
+    
+            // Check if user can enroll in more courses this month
+            if ($enrolled_count < $current_month_quota) {
+                // Allow enrollment
+                $progress_percent = 0;
+                $current_lesson_id = 0;
+                $status = 'enrolled';
+                $subscription_id = $membership_id;
+                
+                $user_course = compact(
+                    'user_id', 
+                    'course_id', 
+                    'current_lesson_id', 
+                    'status', 
+                    'progress_percent', 
+                    'subscription_id'
+                );
+                $user_course['start_time'] = current_time('timestamp');
+    
+                // Add course to user's subscription
+                stm_lms_add_user_course($user_course);
+                STM_LMS_Course::add_student($course_id);
+    
+                $r['url'] = get_the_permalink($course_id);
+                $r['message'] = sprintf(
+                    __('Course enrolled successfully. You can enroll in %d more courses this month.', 'edublink-child'),
+                    $current_month_quota - ($enrolled_count + 1)
+                );
+
+                // Send enrollment email
+                self::send_enrollment_email($user_id, $course_id);
+            } else {
+                // Calculate days until next quota
+                $next_quota_date = self::get_next_quota_date($subscription_start);
+                $days_remaining = ceil(($next_quota_date - current_time('timestamp')) / DAY_IN_SECONDS);
+                
+                $r['error'] = sprintf(
+                    __('You have reached your course limit for this month. You can enroll in %d more courses in %d days.', 'edublink-child'),
+                    $monthly_course_limit,
+                    $days_remaining
+                );
+            }
+        }
+    
+        return $r;
+    }
+    
+    // New method to calculate current month's quota
+    public static function calculate_current_month_quota($subscription_start, $monthly_course_limit) {
+        $current_time = current_time('timestamp');
+        $months_passed = floor(($current_time - $subscription_start) / (30 * DAY_IN_SECONDS));
+        $next_quota_date = $subscription_start + (($months_passed + 1) * 30 * DAY_IN_SECONDS);
+
+        if ($current_time >= $next_quota_date) {
+            // Reset quota at the start of each subscription month
+            return $monthly_course_limit;
+        } else {
+            // Within the current subscription month
+            return $monthly_course_limit;
+        }
+    }
+
+    // New method to get next quota date
+    public static function get_next_quota_date($subscription_start) {
+        $current_time = current_time('timestamp');
+        $months_passed = floor(($current_time - $subscription_start) / (30 * DAY_IN_SECONDS));
+        return $subscription_start + (($months_passed + 1) * 30 * DAY_IN_SECONDS);
+    }
+
+    public static function send_enrollment_email($user_id, $course_id) {
+        $user = get_userdata($user_id);
+        $course = get_post($course_id);
+    
+        if (!$user || !$course) {
+            return;
+        }
+    
+        $subject = sprintf(__('Enrolled in %s', 'edublink-child'), $course->post_title);
+        $message = sprintf(
+            __('Dear %s, you have been successfully enrolled in the course "%s". You can access it at %s.', 'edublink-child'),
+            $user->display_name,
+            $course->post_title,
+            get_the_permalink($course_id)
+        );
+    
+        wp_mail($user->user_email, $subject, $message);
+    }
 }
