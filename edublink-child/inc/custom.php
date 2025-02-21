@@ -49,3 +49,41 @@ function save_custom_field($level_id) {
 	}
 }
 //add_action('pmpro_save_membership_level', 'save_custom_field');
+
+
+
+function stm_lms_register_script_edublink($script, $deps = array(), $footer = false, $inline_scripts = '') {
+	if (!stm_lms_is_masterstudy_theme()) {
+		wp_enqueue_script('jquery');
+	}
+
+	$handle = "stm-lms-{$script}";
+	$child_theme_url = get_stylesheet_directory_uri(); // Get child theme URL
+	$script_path = "/assets/js/{$script}.js";
+	$script_file = get_stylesheet_directory() . $script_path;
+
+	// Check if script exists in child theme
+	if (file_exists($script_file)) {
+		// Use script from child theme
+		wp_enqueue_script(
+			$handle, 
+			$child_theme_url . $script_path, 
+			$deps, 
+			time(), 
+			$footer
+		);
+	} else {
+		// Fallback to parent theme script
+		wp_enqueue_script(
+			$handle, 
+			STM_LMS_URL . 'assets/js/' . $script . '.js', 
+			$deps, 
+			time(), 
+			$footer
+		);
+	}
+
+	if (!empty($inline_scripts)) {
+		wp_add_inline_script($handle, $inline_scripts);
+	}
+}

@@ -349,7 +349,7 @@ stm_lms_register_style( 'taxonomy_archive' );
 		<?php
 		if ( $filter_enabled ) {
 			stm_lms_register_style( 'courses_filter' );
-			stm_lms_register_script( 'courses_filter' );
+			stm_lms_register_script_edublink( 'courses_filter' );
 			STM_LMS_Templates::show_lms_template(
 					'courses/advanced_filters/mainenroll',
 					array(

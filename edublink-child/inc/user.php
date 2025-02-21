@@ -19,7 +19,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 
 		public static function enqueue_scripts() {
 
-			wp_register_script( 'masterstudy-enrolled-courses_edublink', get_stylesheet_directory_uri() . '/assets/js/enrolled-courses.js', array( 'jquery', 'vue.js', 'vue-resource.js' ), MS_LMS_VERSION, true );
+			wp_register_script( 'masterstudy-enrolled-courses_edublink', get_stylesheet_directory_uri() . '/assets/js/enrolled-courses.js', array( 'jquery', 'vue.js', 'vue-resource.js' ), time(), true );
 	wp_localize_script(
 		'masterstudy-enrolled-courses_edublink',
 		'student_data',

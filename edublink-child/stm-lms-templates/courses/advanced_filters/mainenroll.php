@@ -39,9 +39,11 @@ $filters = array(
 			?>
 
 			<div class="stm_lms_courses__filter_actions">
+				<!--
 				<input type="submit"
 					class="heading_font"
 					value="<?php esc_attr_e( 'Show Results', 'masterstudy-lms-learning-management-system' ); ?>">
+					!-->
 				<a href="<?php echo get_permalink( STM_LMS_Options::courses_page() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
 					class="stm_lms_courses__filter_reset">
 					<i class="stmlms-undo2"></i>

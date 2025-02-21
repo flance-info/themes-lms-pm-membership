@@ -19,15 +19,47 @@
             failed: 0,
             in_progress: 0
           },
-          activeTab: 'all'
+          activeTab: 'all',
+          filters: {}
         };
       },
       mounted: function mounted() {
         this.cookieCheck();
         this.getStudentStats();
         this.getCourses('all');
+        this.initFilters();
       },
       methods: {
+        initFilters: function() {
+          var vm = this;
+          $('#stm_filter_form').on('change', 'input, select', function() {
+            vm.updateFilters();
+            vm.getCourses(vm.activeTab);
+          });
+
+          $('#stm_filter_form').on('click', '.stm_lms_courses__filter_reset', function(e) {
+            e.preventDefault();
+            vm.filters = {};
+            vm.getCourses(vm.activeTab);
+          });
+        },
+        updateFilters: function() {
+          var formData = $('#stm_filter_form').serializeArray();
+          this.filters = {};
+          formData.forEach(function(item) {
+            if (item.value) {
+              if (this.filters[item.name]) {
+                if (Array.isArray(this.filters[item.name])) {
+                  this.filters[item.name].push(item.value);
+                } else {
+                  this.filters[item.name] = [this.filters[item.name], item.value];
+                }
+              } else {
+                this.filters[item.name] = item.value;
+              }
+            }
+          }.bind(this));
+        },
         getStudentStats: function getStudentStats() {
           var vm = this;
           var apiUrl = "".concat(ms_lms_resturl, "/student/stats/").concat(student_data.id);
@@ -50,13 +82,30 @@
           var more = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
           var withLoading = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
           var vm = this;
+          
           if (more) {
             vm.offsets[status] += 1;
           } else {
             vm.offsets[status] = 0;
           }
+          
           var currentOffset = vm.offsets[status];
           var url = stm_lms_ajaxurl + '?action=stm_lms_get_user_courses&offset=' + currentOffset + '&nonce=' + stm_lms_nonces['stm_lms_get_user_courses'] + '&status=' + status;
+          
+          if (Object.keys(vm.filters).length > 0) {
+            for (var key in vm.filters) {
+              if (vm.filters.hasOwnProperty(key)) {
+                if (Array.isArray(vm.filters[key])) {
+                  vm.filters[key].forEach(function(value) {
+                    url += '&' + key + '[]=' + encodeURIComponent(value);
+                  });
+                } else {
+                  url += '&' + key + '=' + encodeURIComponent(vm.filters[key]);
+                }
+              }
+            }
+          }
+          
           vm.activeTab = status;
           if (withLoading) {
             vm.loadingButton = true;
@@ -64,6 +113,7 @@
             vm.loading = true;
             vm.courses = [];
           }
+          
           this.$http.get(url).then(function (response) {
             if (response.body['posts']) {
               if (currentOffset === 0) {
