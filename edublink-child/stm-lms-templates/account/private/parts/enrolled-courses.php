@@ -17,20 +17,33 @@ $reviews                    = $point = $certificate = $enterprise = $course_bund
 $term                       = get_queried_object();
 $filter_enabled             = STM_LMS_Courses::filter_enabled();
 stm_lms_register_style( 'taxonomy_archive' );
-print_r($term);
+
+// Initialize term object if null
+if (empty($term)) {
+	$term = new stdClass();
+}
+
+// Initialize term_id with empty array as default
 $term->term_id = (!empty($term->term_id)) ? $term->term_id : [];
+
 $args            = array(
 		'per_row'        => STM_LMS_Options::get_option( 'courses_per_row', 4 ),
 		'posts_per_page' => STM_LMS_Options::get_option( 'courses_per_page', get_option( 'posts_per_page' ) ),
-		'tax_query'      => array(
-				array(
-						'taxonomy' => 'stm_lms_course_taxonomy',
-						'field'    => 'term_id',
-						'terms'    => $term->term_id,
-				),
-		),
-		'class'          => 'archive_grid',
 );
+
+// Only add tax_query if term_id is not empty
+if (!empty($term->term_id)) {
+	$args['tax_query'] = array(
+			array(
+					'taxonomy' => 'stm_lms_course_taxonomy',
+					'field'    => 'term_id',
+					'terms'    => $term->term_id,
+			),
+	);
+}
+
+$args['class'] = 'archive_grid';
+
 $not_empty_stats = $reviews || $point || $certificate || $enterprise || $course_bundle;
 $is_pro_plus     = true;
 stm_lms_register_style( 'taxonomy_archive' );
