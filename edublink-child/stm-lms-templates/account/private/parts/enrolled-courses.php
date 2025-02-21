@@ -49,7 +49,7 @@ $is_pro_plus     = true;
 stm_lms_register_style( 'taxonomy_archive' );
 ?>
 
-<div id="enrolled-courses">
+<div id="enrolled-courses" class="enrolled-courses">
 	<div class="stm_lms_user_info_top">
 		<div class="masterstudy-enrolled-courses">
 			<div class="masterstudy-enrolled-courses__title-wrapper">

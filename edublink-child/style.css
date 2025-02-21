@@ -14,3 +14,14 @@ Tags: custom-background, custom-logo, custom-menu, featured-images, threaded-com
 * If you are not familiar with Child Themes, you can read about it here:
 * http://codex.wordpress.org/Child_Themes
 */
+
+.enrolled-courses
+.stm_lms_instructor_courses__single {
+    width: 31%;
+    margin: 0 0 25px;
+}
+.enrolled-courses
+.stm_lms_courses__archive_wrapper .stm_lms_courses__archive_filter {
+    width: 280px;
+    margin: 0px;
+}
