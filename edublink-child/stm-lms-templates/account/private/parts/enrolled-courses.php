@@ -1,9 +1,9 @@
 <?php
+
 stm_lms_register_style( 'user-courses' );
 stm_lms_register_style( 'instructor_courses' );
 stm_lms_register_style( 'expiration/main' );
 wp_enqueue_script( 'masterstudy-enrolled-courses' );
-
 $is_pro_plus                = STM_LMS_Helpers::is_pro_plus();
 $options                    = get_option( 'stm_lms_settings' );
 $options['student_reports'] = $options['student_reports'] ?? true;
@@ -12,12 +12,28 @@ $enterprise                 = is_ms_lms_addon_enabled( 'enterprise_courses' );
 $certificate                = is_ms_lms_addon_enabled( 'certificate_builder' );
 $point                      = is_ms_lms_addon_enabled( 'point_system' );
 $reviews                    = STM_LMS_Options::get_option( 'course_tab_reviews', true );
-
-$reviews = $point = $certificate = $enterprise = $course_bundle = true;
-
-$not_empty_stats            = $reviews || $point || $certificate || $enterprise || $course_bundle;
-
-$is_pro_plus = true;
+$filter_enabled             = STM_LMS_Courses::filter_enabled();
+$reviews                    = $point = $certificate = $enterprise = $course_bundle = true;
+$term                       = get_queried_object();
+$filter_enabled             = STM_LMS_Courses::filter_enabled();
+stm_lms_register_style( 'taxonomy_archive' );
+print_r($term);
+$term->term_id = (!empty($term->term_id)) ? $term->term_id : [];
+$args            = array(
+		'per_row'        => STM_LMS_Options::get_option( 'courses_per_row', 4 ),
+		'posts_per_page' => STM_LMS_Options::get_option( 'courses_per_page', get_option( 'posts_per_page' ) ),
+		'tax_query'      => array(
+				array(
+						'taxonomy' => 'stm_lms_course_taxonomy',
+						'field'    => 'term_id',
+						'terms'    => $term->term_id,
+				),
+		),
+		'class'          => 'archive_grid',
+);
+$not_empty_stats = $reviews || $point || $certificate || $enterprise || $course_bundle;
+$is_pro_plus     = true;
+stm_lms_register_style( 'taxonomy_archive' );
 ?>
 
 <div id="enrolled-courses">
@@ -55,7 +71,8 @@ $is_pro_plus = true;
 								</div>
 							</div>
 							<?php
-						} if ( $enterprise ) {
+						}
+						if ( $enterprise ) {
 							?>
 							<div class="masterstudy-enrolled-courses-sorting__block">
 								<div class="masterstudy-enrolled-courses-sorting__block-icon masterstudy-enrolled-courses-sorting__block-icon_groups"></div>
@@ -69,7 +86,8 @@ $is_pro_plus = true;
 								</div>
 							</div>
 							<?php
-						} if ( $reviews ) {
+						}
+						if ( $reviews ) {
 							?>
 							<div class="masterstudy-enrolled-courses-sorting__block">
 								<div class="masterstudy-enrolled-courses-sorting__block-icon masterstudy-enrolled-courses-sorting__block-icon_reviews"></div>
@@ -83,7 +101,8 @@ $is_pro_plus = true;
 								</div>
 							</div>
 							<?php
-						} if ( $certificate ) {
+						}
+						if ( $certificate ) {
 							?>
 							<div class="masterstudy-enrolled-courses-sorting__block">
 								<div class="masterstudy-enrolled-courses-sorting__block-icon masterstudy-enrolled-courses-sorting__block-icon_certificates"></div>
@@ -116,9 +135,9 @@ $is_pro_plus = true;
 				<?php } ?>
 				<div class="masterstudy-enrolled-courses-tabs">
 					<div
-						@click="getCourses('all')"
-						class="masterstudy-enrolled-courses-tabs__block"
-						:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'all'}"
+							@click="getCourses('all')"
+							class="masterstudy-enrolled-courses-tabs__block"
+							:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'all'}"
 					>
 						<div class="masterstudy-enrolled-courses-tabs__block-icon masterstudy-enrolled-courses-tabs__block-icon_all"></div>
 						<div class="masterstudy-enrolled-courses-tabs__block-content">
@@ -131,9 +150,9 @@ $is_pro_plus = true;
 						</div>
 					</div>
 					<div
-						@click="getCourses('completed')"
-						class="masterstudy-enrolled-courses-tabs__block"
-						:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'completed'}"
+							@click="getCourses('completed')"
+							class="masterstudy-enrolled-courses-tabs__block"
+							:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'completed'}"
 					>
 						<div class="masterstudy-enrolled-courses-tabs__block-icon masterstudy-enrolled-courses-tabs__block-icon_completed">
 							<span class="masterstudy-enrolled-courses-tabs__block-icon-wrapper"></span>
@@ -148,9 +167,9 @@ $is_pro_plus = true;
 						</div>
 					</div>
 					<div
-						@click="getCourses('in_progress')"
-						class="masterstudy-enrolled-courses-tabs__block"
-						:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'in_progress'}"
+							@click="getCourses('in_progress')"
+							class="masterstudy-enrolled-courses-tabs__block"
+							:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'in_progress'}"
 					>
 						<div class="masterstudy-enrolled-courses-tabs__block-icon masterstudy-enrolled-courses-tabs__block-icon_progress"></div>
 						<div class="masterstudy-enrolled-courses-tabs__block-content">
@@ -163,9 +182,9 @@ $is_pro_plus = true;
 						</div>
 					</div>
 					<div
-						@click="getCourses('failed')"
-						class="masterstudy-enrolled-courses-tabs__block"
-						:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'failed'}"
+							@click="getCourses('failed')"
+							class="masterstudy-enrolled-courses-tabs__block"
+							:class="{'masterstudy-enrolled-courses-tabs__block_active': activeTab === 'failed'}"
 					>
 						<div class="masterstudy-enrolled-courses-tabs__block-icon masterstudy-enrolled-courses-tabs__block-icon_failed">
 							<span class="masterstudy-enrolled-courses-tabs__block-icon-wrapper"></span>
@@ -183,131 +202,150 @@ $is_pro_plus = true;
 			<?php } ?>
 		</div>
 	</div>
-	<div class="stm-lms-user-courses">
-		<div class="multiseparator"></div>
-		<div v-if="!loading" class="stm_lms_instructor_courses__grid">
-			<div class="stm_lms_instructor_courses__single" v-for="course in courses"
-				v-bind:class="{'expired' : course.expiration.length && course.is_expired || course.membership_expired || course.membership_inactive}">
-				<div class="stm_lms_instructor_courses__single__inner">
-					<div class="stm_lms_instructor_courses__single--image">
-						<div class="stm_lms_post_status heading_font"
-							v-if="course.post_status"
-							v-bind:class="course.post_status.status">
-							{{ course.post_status.label }}
-						</div>
-						<div v-html="course.image" class="image_wrapper"></div>
-						<?php STM_LMS_Templates::show_lms_template( 'account/private/parts/expiration' ); ?>
-					</div>
-					<div class="stm_lms_instructor_courses__single--inner">
-						<div class="stm_lms_instructor_courses__single--terms" v-if="course.terms">
-							<div class="stm_lms_instructor_courses__single--term" v-for="(term, key) in course.terms">
-								<a :href="'<?php echo esc_url( STM_LMS_Course::courses_page_url() ); ?>' + '?terms[]=' + term.term_id + '&category[]=' + term.term_id" v-if="key === 0">
-									{{ term.name }}
-								</a>
-							</div>
-						</div>
-						<div class="stm_lms_instructor_courses__single--title">
-							<a v-bind:href="course.link">
-								<h5 v-html="course.title"></h5>
-							</a>
-						</div>
-						<div class="stm_lms_instructor_courses__single--progress">
-							<div class="stm_lms_instructor_courses__single--progress_top">
-								<div class="stm_lms_instructor_courses__single--duration" v-if="course.duration">
-									<i class="far fa-clock"></i>
-									{{ course.duration }}
+	<div class="stm_lms_courses__archive_wrapper">
+		<div class="stm_lms_courses stm_lms_courses__archive">
+			<div class="stm-lms-user-courses">
+				<div class="multiseparator"></div>
+				<div v-if="!loading" class="stm_lms_instructor_courses__grid">
+					<div class="stm_lms_instructor_courses__single" v-for="course in courses"
+						 v-bind:class="{'expired' : course.expiration.length && course.is_expired || course.membership_expired || course.membership_inactive}">
+						<div class="stm_lms_instructor_courses__single__inner">
+							<div class="stm_lms_instructor_courses__single--image">
+								<div class="stm_lms_post_status heading_font"
+									 v-if="course.post_status"
+									 v-bind:class="course.post_status.status">
+									{{ course.post_status.label }}
 								</div>
-								<div class="stm_lms_instructor_courses__single--completed">
-									{{ course.progress_label }}
+								<div v-html="course.image" class="image_wrapper"></div>
+								<?php STM_LMS_Templates::show_lms_template( 'account/private/parts/expiration' ); ?>
+							</div>
+							<div class="stm_lms_instructor_courses__single--inner">
+								<div class="stm_lms_instructor_courses__single--terms" v-if="course.terms">
+									<div class="stm_lms_instructor_courses__single--term" v-for="(term, key) in course.terms">
+										<a :href="'<?php echo esc_url( STM_LMS_Course::courses_page_url() ); ?>' + '?terms[]=' + term.term_id + '&category[]=' + term.term_id" v-if="key === 0">
+											{{ term.name }}
+										</a>
+									</div>
 								</div>
-							</div>
-							<div class="stm_lms_instructor_courses__single--progress_bar">
-								<div class="stm_lms_instructor_courses__single--progress_filled"
-									v-bind:style="{'width' : course.progress + '%'}"></div>
-							</div>
-						</div>
-						<div class="stm_lms_instructor_courses__single--enroll">
-							<a v-if="course.expiration.length && course.is_expired || course.membership_expired || course.membership_inactive || course.no_membership_plan" class="btn btn-default"
-								:href="course.url" target="_blank">
-								<span><?php esc_html_e( 'Preview Course', 'masterstudy-lms-learning-management-system' ); ?></span>
-							</a>
-							<?php
-							if ( is_ms_lms_addon_enabled( 'coming_soon' ) ) {
-								?>
-								<a v-bind:href="course.current_lesson_id" class="btn btn-default"
-									v-bind:class="{
+								<div class="stm_lms_instructor_courses__single--title">
+									<a v-bind:href="course.link">
+										<h5 v-html="course.title"></h5>
+									</a>
+								</div>
+								<div class="stm_lms_instructor_courses__single--progress">
+									<div class="stm_lms_instructor_courses__single--progress_top">
+										<div class="stm_lms_instructor_courses__single--duration" v-if="course.duration">
+											<i class="far fa-clock"></i>
+											{{ course.duration }}
+										</div>
+										<div class="stm_lms_instructor_courses__single--completed">
+											{{ course.progress_label }}
+										</div>
+									</div>
+									<div class="stm_lms_instructor_courses__single--progress_bar">
+										<div class="stm_lms_instructor_courses__single--progress_filled"
+											 v-bind:style="{'width' : course.progress + '%'}"></div>
+									</div>
+								</div>
+								<div class="stm_lms_instructor_courses__single--enroll">
+									<a v-if="course.expiration.length && course.is_expired || course.membership_expired || course.membership_inactive || course.no_membership_plan" class="btn btn-default"
+									   :href="course.url" target="_blank">
+										<span><?php esc_html_e( 'Preview Course', 'masterstudy-lms-learning-management-system' ); ?></span>
+									</a>
+									<?php
+									if ( is_ms_lms_addon_enabled( 'coming_soon' ) ) {
+										?>
+										<a v-bind:href="course.current_lesson_id" class="btn btn-default"
+										   v-bind:class="{
 									'continue': course.progress !== '0',
 									'disabled coming-soon-not-allowed': course.availability === '1'
 								}"
-									v-else>
-									<span v-if="course.progress === '0' && course.availability === ''"><?php esc_html_e( 'Start Course', 'masterstudy-lms-learning-management-system' ); ?></span>
-									<?php
-									if ( is_ms_lms_addon_enabled( 'coming_soon' ) ) {
-										?>
-										<span
-											v-else-if="course.availability === '1'"><?php esc_html_e( 'Coming soon', 'masterstudy-lms-learning-management-system' ); ?></span>
+										   v-else>
+											<span v-if="course.progress === '0' && course.availability === ''"><?php esc_html_e( 'Start Course', 'masterstudy-lms-learning-management-system' ); ?></span>
+											<?php
+											if ( is_ms_lms_addon_enabled( 'coming_soon' ) ) {
+												?>
+												<span
+														v-else-if="course.availability === '1'"><?php esc_html_e( 'Coming soon', 'masterstudy-lms-learning-management-system' ); ?></span>
+												<?php
+											}
+											?>
+											<span v-else-if="course.progress === '100'"><?php esc_html_e( 'Completed', 'masterstudy-lms-learning-management-system' ); ?></span>
+											<span v-else><?php esc_html_e( 'Continue', 'masterstudy-lms-learning-management-system' ); ?></span>
+										</a>
 										<?php
-									}
-									?>
-									<span v-else-if="course.progress === '100'"><?php esc_html_e( 'Completed', 'masterstudy-lms-learning-management-system' ); ?></span>
-									<span v-else><?php esc_html_e( 'Continue', 'masterstudy-lms-learning-management-system' ); ?></span>
-								</a>
-								<?php
-							} else {
-								?>
-								<a v-bind:href="course.current_lesson_id" class="btn btn-default"
-									v-bind:class="{
+									} else {
+										?>
+										<a v-bind:href="course.current_lesson_id" class="btn btn-default"
+										   v-bind:class="{
 									'continue': course.progress !== '0',
 								}"
-									v-else>
-									<span v-if="course.progress === '0' && course.availability === ''"><?php esc_html_e( 'Start Course', 'masterstudy-lms-learning-management-system' ); ?></span>
-									<?php
-									if ( is_ms_lms_addon_enabled( 'coming_soon' ) ) {
-										?>
-										<span
-											v-else-if="course.availability === '1'"><?php esc_html_e( 'Coming soon', 'masterstudy-lms-learning-management-system' ); ?></span>
+										   v-else>
+											<span v-if="course.progress === '0' && course.availability === ''"><?php esc_html_e( 'Start Course', 'masterstudy-lms-learning-management-system' ); ?></span>
+											<?php
+											if ( is_ms_lms_addon_enabled( 'coming_soon' ) ) {
+												?>
+												<span
+														v-else-if="course.availability === '1'"><?php esc_html_e( 'Coming soon', 'masterstudy-lms-learning-management-system' ); ?></span>
+												<?php
+											}
+											?>
+											<span v-else-if="course.progress === '100'"><?php esc_html_e( 'Completed', 'masterstudy-lms-learning-management-system' ); ?></span>
+											<span v-else><?php esc_html_e( 'Continue', 'masterstudy-lms-learning-management-system' ); ?></span>
+										</a>
 										<?php
 									}
 									?>
-									<span v-else-if="course.progress === '100'"><?php esc_html_e( 'Completed', 'masterstudy-lms-learning-management-system' ); ?></span>
-									<span v-else><?php esc_html_e( 'Continue', 'masterstudy-lms-learning-management-system' ); ?></span>
-								</a>
-								<?php
-							}
-							?>
+								</div>
+								<div class="stm_lms_instructor_courses__single--started">
+									{{ course.start_time }}
+								</div>
+							</div>
 						</div>
-						<div class="stm_lms_instructor_courses__single--started">
-							{{ course.start_time }}
+					</div>
+				</div>
+				<div class="stm-lms-course-no-result" id="stm-lms-course-no-result" v-if="!courses.length && !loading">
+					<div class="no-found">
+						<div class="no-result-background">
+							<span class="no-result-icon"></span>
 						</div>
+						<div class="no-found-icon">
+							<i class="stmlms-not_found_courses"></i>
+						</div>
+					</div>
+					<p>
+						<?php echo esc_html__( "You haven't enrolled in courses yet.", 'masterstudy-lms-learning-management-system' ); ?>
+					</p>
+				</div>
+				<div v-if="loading" class="stm-lms-course-spinner-container">
+					<div class="stm-lms-spinner">
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="stm-lms-course-no-result" id="stm-lms-course-no-result" v-if="!courses.length && !loading">
-			<div class="no-found">
-				<div class="no-result-background">
-					<span class="no-result-icon"></span>
-				</div>
-				<div class="no-found-icon">
-					<i class="stmlms-not_found_courses"></i>
-				</div>
-			</div>
-			<p>
-				<?php echo esc_html__( "You haven't enrolled in courses yet.", 'masterstudy-lms-learning-management-system' ); ?>
-			</p>
+		<div class="text-center load-my-courses">
+			<a @click="getCourses(activeTab, true, true)" v-if="!total && courses.length" class="btn btn-default" v-bind:class="{'loading' : loadingButton}">
+				<span><?php esc_html_e( 'Show more', 'masterstudy-lms-learning-management-system' ); ?></span>
+			</a>
 		</div>
-		<div v-if="loading" class="stm-lms-course-spinner-container">
-			<div class="stm-lms-spinner">
-				<div></div>
-				<div></div>
-				<div></div>
-				<div></div>
-			</div>
-		</div>
-	</div>
-	<div class="text-center load-my-courses">
-		<a @click="getCourses(activeTab, true, true)" v-if="!total && courses.length" class="btn btn-default" v-bind:class="{'loading' : loadingButton}">
-			<span><?php esc_html_e( 'Show more', 'masterstudy-lms-learning-management-system' ); ?></span>
-		</a>
+		<?php
+		if ( $filter_enabled ) {
+			stm_lms_register_style( 'courses_filter' );
+			stm_lms_register_script( 'courses_filter' );
+			STM_LMS_Templates::show_lms_template(
+					'courses/advanced_filters/mainenroll',
+					array(
+							'args'     => $args,
+							'category' => $term->term_id,
+					)
+			);
+		}
+		?>
 	</div>
 </div>
+
+
