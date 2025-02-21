@@ -3,7 +3,8 @@
 stm_lms_register_style( 'user-courses' );
 stm_lms_register_style( 'instructor_courses' );
 stm_lms_register_style( 'expiration/main' );
-wp_enqueue_script( 'masterstudy-enrolled-courses' );
+
+wp_enqueue_script( 'masterstudy-enrolled-courses_edublink' );
 $is_pro_plus                = STM_LMS_Helpers::is_pro_plus();
 $options                    = get_option( 'stm_lms_settings' );
 $options['student_reports'] = $options['student_reports'] ?? true;
