@@ -80,14 +80,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
     $('#lms-search-input').on('change', function () {
       $form.find('input[name="search"]').val($(this).val());
       var suburl = get_courses_filter_data();
-      history.pushState({}, null, location.origin + location.pathname + suburl);
+   //   history.pushState({}, null, location.origin + location.pathname + suburl);
     });
     $form.on('change', function () {
       var $this = $(this);
       var suburl = get_courses_filter_data();
       var $container = $this.closest('.stm_lms_courses_wrapper').find('.stm_lms_courses__archive');
       var $btn = $container.find('.stm_lms_load_more_courses');
-      history.pushState({}, null, location.origin + location.pathname + suburl);
+  //    history.pushState({}, null, location.origin + location.pathname + suburl);
     });
     $form.on('submit', function (e) {
       e.preventDefault();

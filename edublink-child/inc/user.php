@@ -203,7 +203,6 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 
 										if ( !in_array($value, $category_ids)) {
 											$matches_filters = false;
-
 											break;
 										}
 									}

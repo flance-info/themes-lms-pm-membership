@@ -24,7 +24,10 @@ $filters = array(
 			$reviews = STM_LMS_Options::get_option( 'course_tab_reviews', true );
 
 			foreach ( $filters as $filter ) :
-
+				
+				if ( 'category' !== $filter ) {
+					continue;
+				}
 				if ( 'rating' === $filter && ! $reviews ) {
 					continue;
 				}
