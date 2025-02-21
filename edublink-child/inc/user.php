@@ -1,17 +1,17 @@
 <?php
 
 use MasterStudy\Lms\Plugin\PostType;
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-if ( class_exists( 'STM_LMS_User' ) ) {
 
+ini_set( 'display_errors', 1 );
+ini_set( 'display_startup_errors', 1 );
+error_reporting( E_ALL );
+if ( class_exists( 'STM_LMS_User' ) ) {
 
 
 	class STM_LMS_User_Edublink extends STM_LMS_User {
 
 		public static function init() {
-		
+
 			remove_action( 'wp_ajax_stm_lms_get_user_courses', 'STM_LMS_User::get_user_courses' );
 			add_action( 'wp_ajax_stm_lms_get_user_courses', 'STM_LMS_User_Edublink::get_user_courses' );
 			self::enqueue_scripts();
@@ -20,16 +20,16 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 		public static function enqueue_scripts() {
 
 			wp_register_script( 'masterstudy-enrolled-courses_edublink', get_stylesheet_directory_uri() . '/assets/js/enrolled-courses.js', array( 'jquery', 'vue.js', 'vue-resource.js' ), time(), true );
-	wp_localize_script(
-		'masterstudy-enrolled-courses_edublink',
-		'student_data',
-		array(
-			'id'         => get_current_user_id(),
-			'hide_stats' => __( 'Hide Statistics', 'masterstudy-lms-learning-management-system' ),
-			'show_stats' => __( 'Show Statistics', 'masterstudy-lms-learning-management-system' ),
-		)
-	);
-			
+			wp_localize_script(
+				'masterstudy-enrolled-courses_edublink',
+				'student_data',
+				array(
+					'id'         => get_current_user_id(),
+					'hide_stats' => __( 'Hide Statistics', 'masterstudy-lms-learning-management-system' ),
+					'show_stats' => __( 'Show Statistics', 'masterstudy-lms-learning-management-system' ),
+				)
+			);
+
 		}
 
 		public static function _get_user_courses( $offset, $status = 'all' ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
@@ -37,15 +37,13 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			if ( empty( $user['id'] ) ) {
 				die;
 			}
-			
-			$user_id  = $user['id'];
-			
-			$response = array(
+			$user_id = $user['id'];
+			$response           = array(
 				'posts' => array(),
 				'total' => false,
 			);
-			$pp     = get_option( 'posts_per_page' );
-			$offset = $offset * $pp;
+			$pp                 = get_option( 'posts_per_page' );
+			$offset             = $offset * $pp;
 			$response['offset'] = $offset;
 			$total              = 0;
 			$all_courses        = stm_lms_get_user_courses( $user_id, '', '', array() );
@@ -56,9 +54,18 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 				}
 				++ $total;
 			}
-			$columns = array( 'course_id', 'current_lesson_id', 'progress_percent', 
-			'subscription_id', 'start_time', 'status', 'enterprise_id', 'bundle_id', 'for_points' );
-			$courses = stm_lms_get_user_courses(
+			$columns                 = array(
+				'course_id',
+				'current_lesson_id',
+				'progress_percent',
+				'subscription_id',
+				'start_time',
+				'status',
+				'enterprise_id',
+				'bundle_id',
+				'for_points'
+			);
+			$courses                 = stm_lms_get_user_courses(
 				$user_id,
 				$pp,
 				$offset,
@@ -116,7 +123,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 						)
 					);
 					$expiration = ob_get_clean();
-					$post = array(
+					$post       = array(
 						'id'                  => $id,
 						'url'                 => get_the_permalink( $id ),
 						'image_id'            => get_post_thumbnail_id( $id ),
@@ -188,7 +195,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			check_ajax_referer( 'stm_lms_get_user_courses', 'nonce' );
 			$offset = ( ! empty( $_GET['offset'] ) ) ? intval( $_GET['offset'] ) : 0;
 			$status = ( ! empty( $_GET['status'] ) ) ? sanitize_text_field( $_GET['status'] ) : 'all';
-			$r = self::_get_user_courses( $offset, $status );
+			$r      = self::_get_user_courses( $offset, $status );
 			wp_send_json( apply_filters( 'stm_lms_get_user_courses_filter', $r ) );
 		}
 
