@@ -2,9 +2,7 @@
 
 use MasterStudy\Lms\Plugin\PostType;
 
-ini_set( 'display_errors', 1 );
-ini_set( 'display_startup_errors', 1 );
-error_reporting( E_ALL );
+ini_set( 'display_errors', 1 );ini_set( 'display_startup_errors', 1 );error_reporting( E_ALL );
 if ( class_exists( 'STM_LMS_User' ) ) {
 
 
@@ -179,9 +177,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					} else {
 						$post['complete_status'] = 'not_started';
 					}
-					if ( $status === $post['complete_status'] || 'all' === $status ) {
-						$response['posts'][] = $post;
-					}
+
 
 					$matches_filters = true;
 					$filters = array();
@@ -197,12 +193,19 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 						foreach ( $filters as $filter_key => $filter_value ) {
 							switch ( $filter_key ) {
 								case 'filter_category':
-									$course_categories = wp_get_post_terms( $id, 'stm_lms_course_taxonomy' );
-									$category_ids      = array_map( function ( $term ) {
+									$course_categories = wp_get_post_terms($id, 'stm_lms_course_taxonomy');
+									$category_ids = array_map(function($term) {
 										return $term->term_id;
-									}, $course_categories );
-									if ( ! in_array( $filter_value, $category_ids ) ) {
-										$matches_filters = false;
+									}, $course_categories);
+									
+									// Convert filter_value to array if it's not already
+									foreach ($filter_value as $value) {
+
+										if ( !in_array($value, $category_ids)) {
+											$matches_filters = false;
+
+											break;
+										}
 									}
 									break;
 								case 'filter_level':
@@ -231,7 +234,9 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 							}
 						}
 					}
-					if ( $matches_filters ) {
+
+
+					if ( ($status === $post['complete_status'] || 'all' === $status) && $matches_filters  ) {
 						$response['posts'][] = $post;
 					}
 

@@ -48,14 +48,16 @@
           this.filters = {};
           formData.forEach(function(item) {
             if (item.value) {
-              if (this.filters[item.name]) {
-                if (Array.isArray(this.filters[item.name])) {
-                  this.filters[item.name].push(item.value);
+              var filterKey = 'filter_' + item.name;
+              
+              if (this.filters[filterKey]) {
+                if (Array.isArray(this.filters[filterKey])) {
+                  this.filters[filterKey].push(item.value);
                 } else {
-                  this.filters[item.name] = [this.filters[item.name], item.value];
+                  this.filters[filterKey] = [this.filters[filterKey], item.value];
                 }
               } else {
-                this.filters[item.name] = item.value;
+                this.filters[filterKey] = item.value;
               }
             }
           }.bind(this));
