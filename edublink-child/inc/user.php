@@ -182,11 +182,65 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					if ( $status === $post['complete_status'] || 'all' === $status ) {
 						$response['posts'][] = $post;
 					}
+
+					$matches_filters = true;
+					$filters = array();
+					if (!empty($_GET)) {
+						foreach ($_GET as $key => $value) {
+							if (strpos($key, 'filter_') === 0) {
+								$filters[$key] = $value;
+							}
+						}
+					}
+
+					if (!empty($filters)) {
+						foreach ( $filters as $filter_key => $filter_value ) {
+							switch ( $filter_key ) {
+								case 'filter_category':
+									$course_categories = wp_get_post_terms( $id, 'stm_lms_course_taxonomy' );
+									$category_ids      = array_map( function ( $term ) {
+										return $term->term_id;
+									}, $course_categories );
+									if ( ! in_array( $filter_value, $category_ids ) ) {
+										$matches_filters = false;
+									}
+									break;
+								case 'filter_level':
+									$course_level = get_post_meta( $id, 'level', true );
+									if ( $course_level != $filter_value ) {
+										$matches_filters = false;
+									}
+									break;
+								case 'filter_rating':
+									$course_rating = STM_LMS_Course::course_average_rate( $id );
+									if ( $course_rating < $filter_value ) {
+										$matches_filters = false;
+									}
+									break;
+								case 'filter_price':
+									$course_price = get_post_meta( $id, 'price', true );
+									if ( $filter_value == 'free' && ! empty( $course_price ) ) {
+										$matches_filters = false;
+									} elseif ( $filter_value == 'paid' && empty( $course_price ) ) {
+										$matches_filters = false;
+									}
+									break;
+							}
+							if ( ! $matches_filters ) {
+								break;
+							}
+						}
+					}
+					if ( $matches_filters ) {
+						$response['posts'][] = $post;
+					}
+
 					if ( empty( $response['posts'] ) ) {
 						$response['total'] = true;
 					}
 				}
 			}
+
 
 			return $response;
 		}
