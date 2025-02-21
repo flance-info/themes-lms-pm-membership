@@ -197,15 +197,17 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 									$category_ids = array_map(function($term) {
 										return $term->term_id;
 									}, $course_categories);
-									
+									$matches_filters = false;
 									// Convert filter_value to array if it's not already
 									foreach ($filter_value as $value) {
+										$value= (is_array($value)) ? $value[0] : $value;
 
-										if ( !in_array($value, $category_ids)) {
-											$matches_filters = false;
-											break;
+										if ( in_array($value, $category_ids)) {
+											$matches_filters = true;
+											
 										}
 									}
+
 									break;
 								case 'filter_level':
 									$course_level = get_post_meta( $id, 'level', true );
