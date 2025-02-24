@@ -98,6 +98,11 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					if (in_array($course->ID, $course_ids)) {
 						continue;
 					}
+
+					$plans_courses = STM_LMS_Course::course_in_plan( $course_id );
+					if (!empty($plans_courses)) {
+						continue;
+					}
 					$course_mod = array(
 						'course_id' => $course->ID,
 						'current_lesson_id' => 0,
@@ -108,11 +113,6 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 						'bundle_id' => 0,
 						'for_points' => '',
 					);
-
-					// Map additional data from $course if needed
-					// For example:
-					// $course_mod['title'] = $course->post_title;
-					// $course_mod['content'] = $course->post_content;
 
 					$courses[] = $course_mod;
 				}

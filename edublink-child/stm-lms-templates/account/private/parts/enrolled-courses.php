@@ -291,11 +291,11 @@ stm_lms_register_style( 'taxonomy_archive' );
 									} else {
 										?>
 										
-										<a v-bind:href="course.current_lesson_id" class="btn btn-default"
+											<a v-bind:href="course.current_lesson_id" class="btn btn-default"
 										   v-bind:class="{
 									'continue': course.progress !== '0',
 								}"
-										   v-else>
+										   v-else-if="course.course_status === 'enrolled'">
 											<span v-if="course.progress === '0' && course.availability === ''"><?php esc_html_e( 'Start Course', 'masterstudy-lms-learning-management-system' ); ?></span>
 											<?php
 											if ( is_ms_lms_addon_enabled( 'coming_soon' ) ) {
@@ -307,6 +307,11 @@ stm_lms_register_style( 'taxonomy_archive' );
 											?>
 											<span v-else-if="course.progress === '100'"><?php esc_html_e( 'Completed', 'masterstudy-lms-learning-management-system' ); ?></span>
 											<span v-else><?php esc_html_e( 'Continue', 'masterstudy-lms-learning-management-system' ); ?></span>
+										</a>
+										<a v-else="course.course_status === 'enrolled'"  class="btn btn-default">
+										<span>	
+											<?php esc_html_e( 'Unlock', 'edublink-child' ); ?>
+										</span>
 										</a>
 										<?php
 									}
