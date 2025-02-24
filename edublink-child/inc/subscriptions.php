@@ -177,6 +177,7 @@ class STM_LMS_Subscriptions_Edublink {
 	}
 
 	public static function use_membership() {
+
 		check_ajax_referer( 'stm_lms_use_membership', 'nonce' );
 
 		/*Check if has course id*/

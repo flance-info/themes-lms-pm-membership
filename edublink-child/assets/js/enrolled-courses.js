@@ -157,6 +157,26 @@
         showStats: function showStats() {
           this.statsVisible = !this.statsVisible;
           this.setCookie('hideStats', !this.statsVisible ? 'true' : 'false');
+        },
+        unlockCourse(courseId) {
+            // Make AJAX request to stm_lms_use_membership using Vue's $http
+            this.$http.get(stm_lms_ajaxurl, {
+                params: {
+                    action: 'stm_lms_use_membership',
+                    course_id: courseId,
+                    nonce: stm_lms_nonces['stm_lms_use_membership'] // Assuming you have a nonce available
+                }
+            })
+            .then(response => {
+                // Handle successful response
+                console.log('Course unlocked successfully:', response.body);
+                // You might want to update the UI or refresh the course list here
+            })
+            .catch(error => {
+                // Handle error
+                console.error('Error unlocking course:', error);
+                // You might want to show an error message to the user
+            });
         }
       }
     });

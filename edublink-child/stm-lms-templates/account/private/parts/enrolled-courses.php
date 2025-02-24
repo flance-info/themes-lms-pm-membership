@@ -308,11 +308,15 @@ stm_lms_register_style( 'taxonomy_archive' );
 											<span v-else-if="course.progress === '100'"><?php esc_html_e( 'Completed', 'masterstudy-lms-learning-management-system' ); ?></span>
 											<span v-else><?php esc_html_e( 'Continue', 'masterstudy-lms-learning-management-system' ); ?></span>
 										</a>
-										<a v-else="course.course_status === 'enrolled'"  class="btn btn-default">
+										<a v-else="course.course_status === 'enrolled'"  class="btn btn-default"
+										data-masterstudy-modal="masterstudy-membership-modal"
+										 @click.prevent="unlockCourse(course.course_id)">
 										<span>	
 											<?php esc_html_e( 'Unlock', 'edublink-child' ); ?>
 										</span>
 										</a>
+
+        
 										<?php
 									}
 									?>
