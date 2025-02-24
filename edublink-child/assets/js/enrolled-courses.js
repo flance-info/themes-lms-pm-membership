@@ -217,6 +217,11 @@
             } else {
                 this.errorMessageContainer.innerHTML = '';
             }
+        },
+        loading(newValue) {
+            if (newValue === true) {
+                this.errorMessage = null;
+            }
         }
       }
     });
