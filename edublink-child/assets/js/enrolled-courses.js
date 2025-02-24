@@ -21,7 +21,9 @@
           },
           activeTab: 'all',
           filters: {},
-          errorMessage: null
+          errorMessage: null,
+          yearMessage: '',
+          nextMonthMessage: ''
         };
       },
       mounted: function mounted() {
@@ -30,6 +32,8 @@
         this.getCourses('all');
         this.initFilters();
         this.errorMessageContainer = document.getElementById('error-message-container');
+        this.unlockMessageContainer = document.getElementById('unlock-message-container');
+   
       },
       methods: {
         initFilters: function() {
@@ -129,6 +133,10 @@
               }
             }
             vm.total = response.body['total'];
+          
+              vm.yearMessage = response.body.quote_left['year-message'];
+              vm.nextMonthMessage = response.body.quote_left['next-month-message']   ;          ;              
+         
             vm.loading = false;
             vm.loadingButton = false;
             Vue.nextTick(function () {
@@ -183,14 +191,10 @@
                 } else {
                     // Handle successful response
                     console.log('Course unlocked successfully:', response.body);
-                    
+                    this.getCourses(vm.activeTab);
                     // Show success message
                     vm.showMessage('success', 'Course unlocked successfully!');
 
-                    // Reload the page after a short delay
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500); // 1.5 seconds delay
                 }
             })
             .catch(error => {

@@ -292,6 +292,8 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					if ( empty( $response['posts'] ) ) {
 						$response['total'] = true;
 					}
+
+					$response['quote_left'] = self::count_quote_left_onmembership( $user_id );
 				}
 			}
 
@@ -307,7 +309,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			wp_send_json( apply_filters( 'stm_lms_get_user_courses_filter', $r ) );
 		}
 
-		public static function count_quote_left_onmembership( $user_id, $membership_id ) {
+		public static function count_quote_left_onmembership( $user_id, $membership_id =null ) {
 			$r = array();
 			// Get subscription info
 			$sub      = STM_LMS_Subscriptions_Edublink::user_subscriptions( null, null, $membership_id );
@@ -341,6 +343,18 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					$subscription_start = current_time( 'timestamp' );
 					update_user_meta( $user_id, 'subscription_start_date_' . $membership_id, $subscription_start );
 				}
+				// Calculate current month's quota
+				$current_month_quota = STM_LMS_Subscriptions_Edublink::calculate_current_month_quota( $subscription_start, $monthly_course_limit );
+				$enrolled_courses    = stm_lms_get_user_courses_by_subscription(
+					$user_id,
+					$membership_id,
+					array( 'user_course_id', 'start_time' ),
+					null,
+					'start_time DESC'
+				);
+				$enrolled_count = STM_LMS_Subscriptions_Edublink::count_subscription_month_enrollments( $enrolled_courses, $subscription_start );
+				$quote_left = $current_month_quota - $enrolled_count ;
+
 				// Calculate days until next quota
 				$next_quota_date = STM_LMS_Subscriptions_Edublink::get_next_quota_date( $subscription_start );
 				$days_remaining  = ceil( ( $next_quota_date - current_time( 'timestamp' ) ) / DAY_IN_SECONDS );
@@ -348,11 +362,18 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					__( 'You can unlock and study up to %d courses each month. During your 1-year subscription, all previously unlocked courses will remain available to you.', 'edublink-child' ),
 					$monthly_course_limit
 				);
-				$r['next-month-message'] = sprintf(
-					__( 'You can unlock the next %d courses in %d days.', 'edublink-child' ),
-					$sub->quotas_left,
-					$days_remaining
-				);
+				if ($quote_left > 0){
+					$r['next-month-message'] = sprintf(
+						__( 'You can unlock the  %d courses in current month.', 'edublink-child' ),
+						$quote_left
+					);
+				}else{
+					$r['next-month-message'] = sprintf(
+						__( 'You can unlock the next %d courses in %d days.', 'edublink-child' ),
+						$sub->quotas_left,
+						$days_remaining
+					);
+				}
 			}
 
 			return $r;

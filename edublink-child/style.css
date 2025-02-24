@@ -38,3 +38,12 @@ div#unlock-message-container {
     color: green;
     font-weight: 500;
 }
+
+#unlock-message-container p {
+    margin: 0px;
+}
+
+p.ym {
+    text-align: left;
+    color: #4d5e6f;
+}

@@ -217,7 +217,8 @@ stm_lms_register_style( 'taxonomy_archive' );
 			<div id="error-message-container" class="alert alert-danger"></div>
 
 			<div id="unlock-message-container" class="alert alert-info" style="display:block;">
-				You can unlock the next 2 courses in 12 days.
+				<p class="ym" v-if="yearMessage">{{ yearMessage }}</p>
+				<p class="nm" v-if="nextMonthMessage">{{ nextMonthMessage }}</p>
 			</div>
 		</div>
 	</div>
