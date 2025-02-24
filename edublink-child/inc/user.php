@@ -85,7 +85,9 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			if ($membership_level) {
 				$level_id = $membership_level->id;
 				$initital_courses = get_option('initial_courses_' . $level_id, array());
+				
 			}
+
 			$level_id = ($level_id) ? $level_id : 0;
 			// Process the courses
 			$all_courses = get_posts(array(
