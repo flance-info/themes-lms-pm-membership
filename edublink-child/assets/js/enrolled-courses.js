@@ -159,8 +159,13 @@
           this.setCookie('hideStats', !this.statsVisible ? 'true' : 'false');
         },
         unlockCourse(courseId) {
+            var vm = this;
+
+            // Show loader
+            vm.loading = true;
+
             // Make AJAX request to stm_lms_use_membership using Vue's $http
-            this.$http.get(stm_lms_ajaxurl, {
+            vm.$http.get(stm_lms_ajaxurl, {
                 params: {
                     action: 'stm_lms_use_membership',
                     course_id: courseId,
@@ -170,12 +175,21 @@
             .then(response => {
                 // Handle successful response
                 console.log('Course unlocked successfully:', response.body);
-                // You might want to update the UI or refresh the course list here
+                
+                // Show success message
+                vm.loading = true;
+                vm.getCourses(vm.activeTab);
             })
             .catch(error => {
                 // Handle error
                 console.error('Error unlocking course:', error);
-                // You might want to show an error message to the user
+                
+                // Show error message
+
+            })
+            .finally(() => {
+                // Hide loader
+              
             });
         }
       }

@@ -351,11 +351,7 @@ stm_lms_register_style( 'taxonomy_archive' );
 				</div>
 			</div>
 		</div>
-		<div class="text-center load-my-courses">
-			<a @click="getCourses(activeTab, true, true)" v-if="!total && courses.length" class="btn btn-default" v-bind:class="{'loading' : loadingButton}">
-				<span><?php esc_html_e( 'Show more', 'masterstudy-lms-learning-management-system' ); ?></span>
-			</a>
-		</div>
+
 		<?php
 		if ( $filter_enabled ) {
 			stm_lms_register_style( 'courses_filter' );
@@ -370,6 +366,11 @@ stm_lms_register_style( 'taxonomy_archive' );
 		}
 		?>
 	</div>
+	<div class="text-center load-my-courses">
+			<a @click="getCourses(activeTab, true, true)" v-if="!total && courses.length" class="btn btn-default" v-bind:class="{'loading' : loadingButton}">
+				<span><?php esc_html_e( 'Show more', 'masterstudy-lms-learning-management-system' ); ?></span>
+			</a>
+		</div>
 </div>
 
 
