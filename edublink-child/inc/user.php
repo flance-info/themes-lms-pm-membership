@@ -98,17 +98,21 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					if (in_array($course->ID, $course_ids)) {
 						continue;
 					}
-
-					$plans_courses = STM_LMS_Course::course_in_plan( $course_id );
+					$courseid = $course_id->ID;
+					
+					$plans_courses = STM_LMS_Course::course_in_plan( $courseid );
+					
 					if (!empty($plans_courses)) {
 						continue;
 					}
+				
+					//$enrolled = (STM_LMS_User::has_course_access( $courseid  , '', false ))? 'enrolled':'not_enrolled';
 					$course_mod = array(
 						'course_id' => $course->ID,
 						'current_lesson_id' => 0,
 						'progress_percent' => 0,
 						'subscription_id' => '',
-						'status' => 'not_enrolled',
+						'status' =>$enrolled,
 						'enterprise_id' => 0,
 						'bundle_id' => 0,
 						'for_points' => '',
