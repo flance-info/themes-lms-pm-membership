@@ -716,14 +716,15 @@ class STM_LMS_Subscriptions_Edublink {
 
     public static function _use_membership_edulink($user_id, $course_id, $membership_id) {
         $r = array();
-  
+		echo __LINE__;
         // Check if user already has course
         $courses = stm_lms_get_user_course($user_id, $course_id, array('user_course_id'));
+		print_r($courses);
         if (!empty($courses)) {
             stm_lms_update_start_time_in_user_course($user_id, $course_id);
             return $r;
         }
-      
+		echo __LINE__;
         // Get subscription info
         $sub = self::user_subscriptions(null, null, $membership_id);
         $r['sub'] = $sub;
@@ -739,10 +740,11 @@ class STM_LMS_Subscriptions_Edublink {
                 }
             }
         }
-
+		echo __LINE__;
         $membership_id = $sub->subscription_id;
         $level_id = $sub->ID;
-
+		echo $membership_id;
+		echo __LINE__;
         if (!empty($membership_id)) {
           
             // Get monthly course limit from membership level settings
