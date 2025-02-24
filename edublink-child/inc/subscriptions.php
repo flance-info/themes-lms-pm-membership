@@ -12,7 +12,7 @@ class STM_LMS_Subscriptions_Edublink {
 
         add_action( 'wp_ajax_stm_lms_use_membership', array(self::class, 'use_membership') );
 		add_action( 'wp_ajax_nopriv_stm_lms_use_membership', array(self::class, 'use_membership') );
-		
+
 		add_action('pmpro_membership_level_after_other_settings', array('STM_LMS_Subscriptions_Edublink', 'add_custom_field_to_membership_level'));
 		add_action('pmpro_save_membership_level', array('STM_LMS_Subscriptions_Edublink', 'save_custom_field'));
 	
@@ -893,18 +893,45 @@ class STM_LMS_Subscriptions_Edublink {
     }
 
     // Add custom field to membership level settings page
-    public static function add_custom_field_to_membership_level() {
+    public static function add_custom_field_to_membership_level($level) {
         ?>
-        <h3 class="topborder"><?php esc_html_e('Custom Fields', 'edublink-child'); ?></h3>
+        <h3 class="topborder"><?php esc_html_e('Initial Course Enrollment', 'edublink-child'); ?></h3>
         <table class="form-table">
             <tbody>
                 <tr>
                     <th scope="row" valign="top">
-                        <label for="custom_field"><?php esc_html_e('Custom Field:', 'edublink-child'); ?></label>
+                        <label for="initial_courses"><?php esc_html_e('Initial Course Enrollment:', 'edublink-child'); ?></label>
                     </th>
                     <td>
-                        <input type="text" id="custom_field" name="custom_field" value="<?php echo esc_attr(get_option('custom_field')); ?>" />
-                        <p class="description"><?php esc_html_e('Enter your custom field value here.', 'edublink-child'); ?></p>
+                        <?php
+                        // Get all stm-courses
+                        $args = array(
+                            'post_type' => 'stm-courses',
+                            'posts_per_page' => -1,
+                            'orderby' => 'title',
+                            'order' => 'ASC'
+                        );
+                        $courses = get_posts($args);
+                        ?>
+                        <select id="initial_courses" name="initial_courses[]" multiple="multiple" style="width: 100%; height: 200px;">
+                            <?php
+                            // Get the saved courses for this level
+                            $saved_courses = get_option('initial_courses_' . $level->id);
+                            if (!is_array($saved_courses)) {
+                                $saved_courses = array();
+                            }
+
+                            foreach ($courses as $course) {
+                                $selected = in_array($course->ID, $saved_courses) ? 'selected="selected"' : '';
+                                ?>
+                                <option value="<?php echo esc_attr($course->ID); ?>" <?php echo $selected; ?>>
+                                    <?php echo esc_html($course->post_title); ?>
+                                </option>
+                                <?php
+                            }
+                            ?>
+                        </select>
+                        <p class="description"><?php esc_html_e('Select the initial courses for enrollment. Hold Ctrl (Windows) or Cmd (Mac) to select multiple courses.', 'edublink-child'); ?></p>
                     </td>
                 </tr>
             </tbody>
@@ -913,8 +940,12 @@ class STM_LMS_Subscriptions_Edublink {
     }
 
     public static function save_custom_field($level_id) {
-        if(isset($_POST['custom_field'])) {
-            update_option('custom_field_' . $level_id, sanitize_text_field($_POST['custom_field']));
+        if (isset($_POST['initial_courses'])) {
+            // Save the value as an option specific to the membership level
+            update_option('initial_courses_' . $level_id, array_map('sanitize_text_field', $_POST['initial_courses']));
+            
+            // Also save a global option for the default value
+            update_option('initial_courses', array_map('sanitize_text_field', $_POST['initial_courses']));
         }
     }
 }
