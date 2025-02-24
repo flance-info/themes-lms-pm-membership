@@ -290,6 +290,7 @@ stm_lms_register_style( 'taxonomy_archive' );
 										<?php
 									} else {
 										?>
+										
 										<a v-bind:href="course.current_lesson_id" class="btn btn-default"
 										   v-bind:class="{
 									'continue': course.progress !== '0',

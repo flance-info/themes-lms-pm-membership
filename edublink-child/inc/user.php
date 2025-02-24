@@ -45,6 +45,12 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			$response['offset'] = $offset;
 			$total              = 0;
 			$all_courses        = stm_lms_get_user_courses( $user_id, '', '', array() );
+
+			// Get the user's current membership level
+			$membership_level = pmpro_getMembershipLevelForUser($user_id);
+			//print_r($membership_level->id);
+			//print_r($all_courses);
+			
 			foreach ( $all_courses as $course_user ) {
 				if ( get_post_type( $course_user['course_id'] ) !== 'stm-courses' ) {
 					stm_lms_get_delete_courses( $course_user['course_id'] );
@@ -63,6 +69,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 				'bundle_id',
 				'for_points'
 			);
+
 			$courses                 = stm_lms_get_user_courses(
 				$user_id,
 				$pp,
@@ -71,6 +78,46 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 				null,
 				null,
 			);
+
+			// Get all courses of user membership plan
+			$all_courses = array();
+			if ($membership_level) {
+				$level_id = $membership_level->id;
+				$all_courses = get_option('initial_courses_' . $level_id, array());
+			}
+
+			// Process the courses
+			$all_courses = get_posts(array(
+                'post_type' => 'stm-courses',
+                'numberposts' => -1,
+            ));
+			$course_ids = array_column($courses, 'course_id');
+			foreach ($all_courses as $course_id) {
+				$course = get_post($course_id);
+				if ($course && $course->post_type === 'stm-courses') {
+					if (in_array($course->ID, $course_ids)) {
+						continue;
+					}
+					$course_mod = array(
+						'course_id' => $course->ID,
+						'current_lesson_id' => 0,
+						'progress_percent' => 0,
+						'subscription_id' => '',
+						'status' => 'not_enrolled',
+						'enterprise_id' => 0,
+						'bundle_id' => 0,
+						'for_points' => '',
+					);
+
+					// Map additional data from $course if needed
+					// For example:
+					// $course_mod['title'] = $course->post_title;
+					// $course_mod['content'] = $course->post_content;
+
+					$courses[] = $course_mod;
+				}
+			}
+
 			$response['total_posts'] = $total;
 			$response['total']       = $total <= $offset + $pp;
 			$response['pages']       = ceil( $total / $pp );
@@ -149,6 +196,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 						'membership_expired'  => $membership_expired,
 						'membership_inactive' => $membership_inactive,
 						'no_membership_plan'  => $subscription_enabled && ! $membership_level && $only_for_membership && ! $my_course && $bought_by_membership,
+						'course_status' => $course['status']
 					);
 					/* Check course complete status*/
 					$curriculum       = ( new MasterStudy\Lms\Repositories\CurriculumRepository() )->get_curriculum( $id, true );
