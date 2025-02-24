@@ -32,3 +32,9 @@ Tags: custom-background, custom-logo, custom-menu, featured-images, threaded-com
     color: red;
     border: 1px solid red;
 }
+
+div#unlock-message-container {
+    text-align: right;
+    color: green;
+    font-weight: 500;
+}

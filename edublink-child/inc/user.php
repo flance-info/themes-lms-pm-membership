@@ -307,6 +307,57 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			wp_send_json( apply_filters( 'stm_lms_get_user_courses_filter', $r ) );
 		}
 
+		public static function count_quote_left_onmembership( $user_id, $membership_id ) {
+			$r = array();
+			// Get subscription info
+			$sub      = STM_LMS_Subscriptions_Edublink::user_subscriptions( null, null, $membership_id );
+			$r['sub'] = $sub;
+			if ( ! empty( $membership_id ) ) {
+				$sub  = object;
+				$subs = STM_LMS_Subscriptions_Edublink::user_subscription_levels();
+				if ( ! empty( $subs ) ) {
+					foreach ( $subs as $subscription ) {
+						if ( $subscription->subscription_id === $membership_id && $subscription->quotas_left ) {
+							$sub = $subscription;
+						}
+					}
+				}
+			}
+			$membership_id = $sub->subscription_id;
+			$level_id      = $sub->ID;
+			if ( ! empty( $membership_id ) ) {
+
+				// Get monthly course limit from membership level settings
+				$monthly_course_limit = STM_LMS_Subscriptions_Edublink::get_course_number( $level_id );
+				if ( $monthly_course_limit === '0' || empty( $monthly_course_limit ) ) {
+					$r['error'] = __( 'This membership level does not allow course enrollment.', 'edublink-child' );
+
+					return $r;
+				}
+				// Get subscription start date
+				$subscription_start = get_user_meta( $user_id, 'subscription_start_date_' . $membership_id, true );
+				if ( empty( $subscription_start ) ) {
+					// First time subscription - set start date
+					$subscription_start = current_time( 'timestamp' );
+					update_user_meta( $user_id, 'subscription_start_date_' . $membership_id, $subscription_start );
+				}
+				// Calculate days until next quota
+				$next_quota_date = STM_LMS_Subscriptions_Edublink::get_next_quota_date( $subscription_start );
+				$days_remaining  = ceil( ( $next_quota_date - current_time( 'timestamp' ) ) / DAY_IN_SECONDS );
+				$r['year-message']       = sprintf(
+					__( 'You can unlock and study up to %d courses each month. During your 1-year subscription, all previously unlocked courses will remain available to you.', 'edublink-child' ),
+					$monthly_course_limit
+				);
+				$r['next-month-message'] = sprintf(
+					__( 'You can unlock the next %d courses in %d days.', 'edublink-child' ),
+					$sub->quotas_left,
+					$days_remaining
+				);
+			}
+
+			return $r;
+		}
+
 	}
 
 	STM_LMS_User_Edublink::init();

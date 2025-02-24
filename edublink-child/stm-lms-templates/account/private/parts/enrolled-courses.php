@@ -215,6 +215,10 @@ stm_lms_register_style( 'taxonomy_archive' );
 				</div>
 			<?php } ?>
 			<div id="error-message-container" class="alert alert-danger"></div>
+
+			<div id="unlock-message-container" class="alert alert-info" style="display:block;">
+				You can unlock the next 2 courses in 12 days.
+			</div>
 		</div>
 	</div>
 	<div class="stm_lms_courses__archive_wrapper">
