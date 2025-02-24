@@ -268,7 +268,8 @@ stm_lms_register_style( 'taxonomy_archive' );
 									</div>
 								</div>
 								<div class="stm_lms_instructor_courses__single--enroll">
-									<a v-if="course.expiration.length && course.is_expired || course.membership_expired || course.membership_inactive || course.no_membership_plan" class="btn btn-default"
+										
+									<a v-if="course.expiration.length && course.is_expired || course.membership_expired || course.membership_inactive || course.no_membership_plan || course.level_id == 0" class="btn btn-default"
 									   :href="course.url" target="_blank">
 										<span><?php esc_html_e( 'Preview Course', 'masterstudy-lms-learning-management-system' ); ?></span>
 									</a>
@@ -295,7 +296,7 @@ stm_lms_register_style( 'taxonomy_archive' );
 										</a>
 										<?php
 									} else {
-										?>
+										?>										
 										
 											<a v-bind:href="course.current_lesson_id" class="btn btn-default"
 										   v-bind:class="{
@@ -316,7 +317,7 @@ stm_lms_register_style( 'taxonomy_archive' );
 										</a>
 										<a v-else="course.course_status === 'enrolled'"  class="btn btn-default"
 										data-masterstudy-modal="masterstudy-membership-modal"
-										 @click.prevent="unlockCourse(course.course_id)">
+										 @click.prevent="unlockCourse(course.course_id)">										
 										<span>	
 											<?php esc_html_e( 'Unlock', 'edublink-child' ); ?>
 										</span>

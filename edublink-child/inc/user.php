@@ -81,16 +81,19 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 
 			// Get all courses of user membership plan
 			$all_courses = array();
+			$initital_courses = [];
 			if ($membership_level) {
 				$level_id = $membership_level->id;
-				$all_courses = get_option('initial_courses_' . $level_id, array());
+				$initital_courses = get_option('initial_courses_' . $level_id, array());
 			}
-
+			$level_id = ($level_id) ? $level_id : 0;
 			// Process the courses
 			$all_courses = get_posts(array(
                 'post_type' => 'stm-courses',
                 'numberposts' => -1,
             ));
+
+
 			$course_ids = array_column($courses, 'course_id');
 			foreach ($all_courses as $course_id) {
 				$course = get_post($course_id);
@@ -101,12 +104,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					$courseid = $course_id->ID;
 					
 					$plans_courses = STM_LMS_Course::course_in_plan( $courseid );
-					
-					if (!empty($plans_courses)) {
-						continue;
-					}
-				
-					//$enrolled = (STM_LMS_User::has_course_access( $courseid  , '', false ))? 'enrolled':'not_enrolled';
+					$enrolled = (STM_LMS_User::has_course_access( $courseid  , '', false ))? 'enrolled':'not_enrolled';
 					$course_mod = array(
 						'course_id' => $course->ID,
 						'current_lesson_id' => 0,
@@ -163,6 +161,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 					$membership_status    = ( $subscription_enabled ) ? STM_LMS_Subscriptions::get_membership_status( get_current_user_id() ) : 'inactive';
 					$membership_expired   = $subscription_enabled && 'expired' === $membership_status && $only_for_membership && ! $my_course && $bought_by_membership;
 					$membership_inactive  = $subscription_enabled && ! $membership_level && 'active' !== $membership_status && 'expired' !== $membership_status && $only_for_membership && ! $my_course && $bought_by_membership;
+					
 					ob_start();
 					STM_LMS_Templates::show_lms_template(
 						'global/expired_course',
@@ -200,7 +199,8 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 						'membership_expired'  => $membership_expired,
 						'membership_inactive' => $membership_inactive,
 						'no_membership_plan'  => $subscription_enabled && ! $membership_level && $only_for_membership && ! $my_course && $bought_by_membership,
-						'course_status' => $course['status']
+						'course_status' => $course['status'],
+						'level_id' => $level_id
 					);
 					/* Check course complete status*/
 					$curriculum       = ( new MasterStudy\Lms\Repositories\CurriculumRepository() )->get_curriculum( $id, true );

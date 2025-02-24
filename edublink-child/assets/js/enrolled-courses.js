@@ -134,9 +134,14 @@
             }
             vm.total = response.body['total'];
           
-              vm.yearMessage = response.body.quote_left['year-message'];
-              vm.nextMonthMessage = response.body.quote_left['next-month-message']   ;          ;              
-         
+                if (response.body && response.body.quote_left && typeof response.body.quote_left === 'object') {
+                vm.yearMessage = response.body.quote_left['year-message'] || '';
+                vm.nextMonthMessage = response.body.quote_left['next-month-message'] || '';
+            } else {
+                vm.yearMessage = '';
+                vm.nextMonthMessage = '';
+                console.warn('Subscription data not available or in unexpected format.');
+            }
             vm.loading = false;
             vm.loadingButton = false;
             Vue.nextTick(function () {

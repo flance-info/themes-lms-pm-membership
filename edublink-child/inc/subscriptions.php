@@ -15,8 +15,10 @@ class STM_LMS_Subscriptions_Edublink {
 
 		add_action('pmpro_membership_level_after_other_settings', array('STM_LMS_Subscriptions_Edublink', 'add_custom_field_to_membership_level'));
 		add_action('pmpro_save_membership_level', array('STM_LMS_Subscriptions_Edublink', 'save_custom_field'));
-	
-
+		$user = wp_get_current_user();
+		if ($user->ID == 32) {
+			self::remove_inactive_user_subscriptions($user->ID);
+		}
 	}
 
 	public static function admin_toggle_buying() {
@@ -927,5 +929,72 @@ class STM_LMS_Subscriptions_Edublink {
             // Also save a global option for the default value
             update_option('initial_courses', array_map('sanitize_text_field', $_POST['initial_courses']));
         }
+    }
+
+    public static function remove_user_subscription($user_id, $subscription_id) {
+        if (!self::subscription_enabled()) {
+            return false;
+        }
+
+        // Check if the user is logged in and has the specified subscription
+        if (!is_user_logged_in() || !pmpro_hasMembershipLevel($subscription_id, $user_id)) {
+            return false;
+        }
+
+        // Remove the subscription from the user
+        $result = pmpro_changeMembershipLevel(0, $user_id, $subscription_id);
+
+        if ($result) {
+            // Remove all courses associated with this subscription
+            $courses = stm_lms_get_user_courses_by_subscription($user_id, $subscription_id);
+            foreach ($courses as $course) {
+                stm_lms_get_delete_user_course($user_id, $course['course_id']);
+            }
+
+            // Remove subscription start date
+            delete_user_meta($user_id, 'subscription_start_date_' . $subscription_id);
+			
+            // Log the removal
+            error_log("Subscription {$subscription_id} removed for user {$user_id}");
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function remove_inactive_user_subscriptions($user_id) {
+        if (!self::subscription_enabled()) {
+            return false;
+        }
+
+        // Check if the user is logged in
+        if (!is_user_logged_in()) {
+            return false;
+        }
+
+        // Get all subscriptions for the user
+        $user_subscriptions = pmpro_getMembershipLevelsForUser($user_id);
+        print_r($user_subscriptions);
+
+		exit;
+        $removed_subscriptions = 0;
+
+        foreach ($user_subscriptions as $subscription) {
+            // Check if the subscription is not active
+            if ($subscription->status != 'active') {
+                // Remove the inactive subscription
+                $result = self::remove_user_subscription($user_id, $subscription->id);
+
+                if ($result) {
+                    $removed_subscriptions++;
+                }
+            }
+        }
+
+        // Log the number of removed subscriptions
+        error_log("Removed {$removed_subscriptions} inactive subscriptions for user {$user_id}");
+
+        return $removed_subscriptions > 0;
     }
 }
