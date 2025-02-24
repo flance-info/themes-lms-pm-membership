@@ -25,3 +25,10 @@ Tags: custom-background, custom-logo, custom-menu, featured-images, threaded-com
     width: 280px;
     margin: 0px;
 }
+
+
+.error-message {
+    /* background: red; */
+    color: red;
+    border: 1px solid red;
+}

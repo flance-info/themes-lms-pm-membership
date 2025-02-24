@@ -214,6 +214,7 @@ stm_lms_register_style( 'taxonomy_archive' );
 					</div>
 				</div>
 			<?php } ?>
+			<div id="error-message-container" class="alert alert-danger"></div>
 		</div>
 	</div>
 	<div class="stm_lms_courses__archive_wrapper">

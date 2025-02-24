@@ -20,7 +20,8 @@
             in_progress: 0
           },
           activeTab: 'all',
-          filters: {}
+          filters: {},
+          errorMessage: null
         };
       },
       mounted: function mounted() {
@@ -28,6 +29,7 @@
         this.getStudentStats();
         this.getCourses('all');
         this.initFilters();
+        this.errorMessageContainer = document.getElementById('error-message-container');
       },
       methods: {
         initFilters: function() {
@@ -173,24 +175,48 @@
                 }
             })
             .then(response => {
-                // Handle successful response
-                console.log('Course unlocked successfully:', response.body);
-                
-                // Show success message
-                vm.loading = true;
-                vm.getCourses(vm.activeTab);
+                if (response.body && response.body.error) {
+                    // Handle error response
+                    console.log('Error unlocking course:', response.body.error);
+                    vm.loading = false;
+                    vm.errorMessage = response.body.error;
+                } else {
+                    // Handle successful response
+                    console.log('Course unlocked successfully:', response.body);
+                    
+                    // Show success message
+                    vm.showMessage('success', 'Course unlocked successfully!');
+
+                    // Reload the page after a short delay
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500); // 1.5 seconds delay
+                }
             })
             .catch(error => {
                 // Handle error
                 console.error('Error unlocking course:', error);
-                
-                // Show error message
-
+                vm.loading = false;
+                // Set error message
+                vm.errorMessage = 'Error unlocking course. Please try again.';
             })
             .finally(() => {
                 // Hide loader
               
             });
+        },
+        showMessage: function showMessage(type, message) {
+            // Implement the logic to show a message to the user
+            console.log(type + ': ' + message);
+        }
+      },
+      watch: {
+        errorMessage(newValue) {
+            if (newValue) {
+                this.errorMessageContainer.innerHTML = `<div class="error-message">${newValue}</div>`;
+            } else {
+                this.errorMessageContainer.innerHTML = '';
+            }
         }
       }
     });
