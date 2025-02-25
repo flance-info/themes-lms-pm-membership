@@ -82,6 +82,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			// Get all courses of user membership plan
 			$all_courses = array();
 			$initital_courses = [];
+
 			if ($membership_level) {
 				$level_id = $membership_level->id;
 				$initital_courses = get_option('initial_courses_' . $level_id, array());
@@ -398,7 +399,7 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 			return $r;
 		}
 
-		public static function add_initial_courses_to_subscription($user_id, $level_id,  $membership_id) {
+		public static function add_initial_courses_to_subscription($user_id, $level_id,  $membership_id = null) {
 			$initial_courses = get_option('initial_courses_' . $level_id, array());
 		
 		
@@ -406,9 +407,10 @@ if ( class_exists( 'STM_LMS_User' ) ) {
 				// Get current month's quota
 				$monthly_course_limit = STM_LMS_Subscriptions_Edublink::get_course_number($level_id);
 				$subscription_start = get_user_meta($user_id, 'subscription_start_date_' . $level_id, true);
-
+				foreach($initial_courses as $course_id){
 				// Check if subscription start date exists
-				STM_LMS_Subscriptions_Edublink::_use_membership_edulink( $user_id, $course_id, $membership_id )
+				STM_LMS_Subscriptions_Edublink::_use_membership_edulink( $user_id, $course_id, null);
+				}
 			}
 		}
 

@@ -17,33 +17,69 @@ Tags: custom-background, custom-logo, custom-menu, featured-images, threaded-com
 
 .enrolled-courses
 .stm_lms_instructor_courses__single {
-    width: 31%;
-    margin: 0 0 25px;
+	width: 31%;
+	margin: 0 0 25px;
 }
+
 .enrolled-courses
 .stm_lms_courses__archive_wrapper .stm_lms_courses__archive_filter {
-    width: 280px;
-    margin: 0px;
+	width: 280px;
+	margin: 0px;
 }
 
 
 .error-message {
-    /* background: red; */
-    color: red;
-    border: 1px solid red;
+	/* background: red; */
+	color: red;
+	border: 1px solid red;
 }
 
 div#unlock-message-container {
-    text-align: right;
-    color: green;
-    font-weight: 500;
+	text-align: right;
+	color: green;
+	font-weight: 500;
 }
 
 #unlock-message-container p {
-    margin: 0px;
+	margin: 0px;
 }
 
 p.ym {
-    text-align: left;
-    color: #4d5e6f;
+	text-align: left;
+	color: #4d5e6f;
+}
+
+.active .stm_lms_courses__filter_content {
+	height: unset !important;
+}
+
+
+@media (max-width: 860px) {
+	.enrolled-courses
+	.stm_lms_instructor_courses__single {
+		width: 50%;
+	}
+}
+
+@media (max-width: 850px) {
+	body .enrolled-courses .stm_lms_courses__archive_wrapper .stm_lms_courses__archive_filters {
+		display: block;
+	}
+
+	.stm_lms_courses__archive_wrapper {
+
+		flex-direction: column-reverse;
+	}
+
+	.enrolled-courses .stm_lms_courses__archive_wrapper .stm_lms_courses__archive_filter {
+    width: 100%;
+    margin-bottom: 20px;
+}
+}
+
+@media (max-width: 530px) {
+	.enrolled-courses
+	.stm_lms_instructor_courses__single {
+		width: 100%;
+	}
 }
